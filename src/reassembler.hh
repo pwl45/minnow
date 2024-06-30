@@ -1,12 +1,38 @@
 #pragma once
 
 #include "byte_stream.hh"
+#include <map>
+#include <string>
+
+// A class that stores a map of non-overlapping ranges of data.
+// The data is stored as a map of first index to data.
+// Overlapping ranges that are inserted will overwrite the existing data.
+// Reading from the RangeMap will never return overlapping ranges
+class RangeMap
+{
+  public:
+    explicit RangeMap() : data_map_(){}
+    void insert( uint64_t first_index, std::string data);
+    void erase( uint64_t key);
+    uint64_t bytes_pending() const;
+    std::string get_data(uint64_t index) const;
+  private:
+    std::map<uint64_t, std::string> data_map_;
+    uint64_t bytes_pending_ = 0;
+    std::string merge_overlaping(uint64_t first_index, std::string first_data, uint64_t second_index, std::string second_data);
+    void handle_predecessor(uint64_t first_index, std::string data);
+};
 
 class Reassembler
 {
 public:
   // Construct Reassembler to write into given ByteStream.
-  explicit Reassembler( ByteStream&& output ) : output_( std::move( output ) ) {}
+  explicit Reassembler( ByteStream&& output ) 
+    : output_( std::move( output ) )
+      , next_index_( 0 )
+      , final_byte_( static_cast<uint64_t>(-1) )
+      , data_map_()
+  {}
 
   /*
    * Insert a new substring to be reassembled into a ByteStream.
@@ -42,4 +68,7 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
+  uint64_t next_index_ = 0; // next index to be written
+  uint64_t final_byte_ = -1; // last index to be written
+  RangeMap data_map_;
 };
