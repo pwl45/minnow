@@ -36,7 +36,6 @@ uint64_t Writer::bytes_pushed() const
 
 bool Reader::is_finished() const
 {
-  /* cout << "checking is finished; buf: " << buf_ << ", closed: " << closed_ << endl; */
   return closed_ && buf_.empty();
 }
 
