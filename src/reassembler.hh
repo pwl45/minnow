@@ -71,4 +71,5 @@ private:
   uint64_t next_index_ = 0; // next index to be written
   uint64_t final_byte_ = -1; // last index to be written
   RangeMap data_map_;
+  void close_if_done();
 };
